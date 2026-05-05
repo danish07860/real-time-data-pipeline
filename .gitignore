@@ -1,0 +1,19 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Data (DO NOT PUSH)
+data/raw/
+data/processed/
+data/aggregated/
+
+# Logs
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Kafka logs (if moved later)
+kafka-logs/
