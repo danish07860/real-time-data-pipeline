@@ -1,19 +1,42 @@
+# =====================
 # Python
+# =====================
 venv/
+airflow-venv/
 __pycache__/
 *.pyc
 
-# Data (DO NOT PUSH)
+# =====================
+# Data (NEVER COMMIT)
+# =====================
 data/raw/
 data/processed/
 data/aggregated/
 data/checkpoints/
-# Logs
-logs/
 
-# OS
+# =====================
+# Logs
+# =====================
+logs/
+*.log
+
+# =====================
+# Airflow
+# =====================
+airflow.db
+airflow.cfg
+webserver_config.py
+
+# =====================
+# OS / System
+# =====================
 .DS_Store
 Thumbs.db
 
-# Kafka logs (if moved later)
-kafka-logs/
+# =====================
+# IDE
+# =====================
+.vscode/
+
+
+

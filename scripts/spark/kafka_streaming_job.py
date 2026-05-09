@@ -1,6 +1,7 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, from_json, to_timestamp
+from pyspark.sql.functions import col, from_json, to_timestamp, window
 from pyspark.sql.types import StructType, IntegerType, StringType
+from pyspark.sql.functions import year, month, dayofmonth
 
 # ==============================
 # PATHS
@@ -56,15 +57,27 @@ df_clean = df_parsed.filter(col("user_id").isNotNull())
 
 df_clean = df_clean.withColumn(
     "timestamp",
-    to_timestamp("timestamp")
+    to_timestamp("timestamp", "yyyy-MM-dd HH:mm:ss")
 )
+
+df_clean = df_clean \
+    .withColumn("year", year("timestamp")) \
+    .withColumn("month", month("timestamp")) \
+    .withColumn("day", dayofmonth("timestamp"))
 
 # ==============================
 # AGGREGATION
 # ==============================
+# df_agg = df_clean \
+#     .withWatermark("timestamp", "1 minute") \
+#     .groupBy("event") \
+#     .sum("amount")
 df_agg = df_clean \
     .withWatermark("timestamp", "1 minute") \
-    .groupBy("event") \
+    .groupBy(
+        window("timestamp", "1 minute"),
+        "event"
+    ) \
     .sum("amount")
 
 # ==============================
@@ -74,6 +87,7 @@ clean_query = df_clean.writeStream \
     .format("json") \
     .option("path", PROCESSED_PATH) \
     .option("checkpointLocation", CHECKPOINT + "clean/") \
+    .partitionBy("event", "year", "month", "day") \
     .outputMode("append") \
     .start()
 
@@ -81,9 +95,10 @@ clean_query = df_clean.writeStream \
 # WRITE AGGREGATION
 # ==============================
 agg_query = df_agg.writeStream \
-    .format("console") \
+    .format("json") \
+    .option("path", AGG_PATH) \
     .option("checkpointLocation", CHECKPOINT + "agg/") \
-    .outputMode("complete") \
+    .outputMode("append") \
     .start()
 
 # ==============================
